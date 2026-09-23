@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수행평가 알리미</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        
+        /* 전체 색상 변수 설정 (남색, 청록색, 흰색) */
+        :root {
+            --navy: #1A2980;
+            --teal: #008080;
+            --white: #FFFFFF;
+            --light-gray: #F5F7FA;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--white);
+            color: var(--navy);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            align-items: center; /* 전체 세로 중앙 정렬 */
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1, h2 {
+            text-align: center;
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
+        p.desc {
+            text-align: center;
+            color: var(--teal);
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .step.active {
+            display: block;
+        }
+        
+        /* 심플한 입력창 디자인 */
+        .input-group {
+            margin-bottom: 25px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: var(--navy);
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 5px;
+            margin-bottom: 15px;
+            border: none;
+            border-bottom: 2px solid var(--teal); /* 아래쪽 테두리만 남겨서 깔끔하게 */
+            background: transparent;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 16px;
+            color: var(--navy);
+            transition: 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-bottom: 2px solid var(--navy);
+        }
+
+        /* 버튼 디자인 */
+        .btn {
+            background-color: var(--navy);
+            color: var(--white);
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px; /* 심플한 곡선 */
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+        .btn:hover { background-color: #121C55; }
+        
+        .btn-outline {
+            background-color: var(--white);
+            color: var(--teal);
+            border: 2px solid var(--teal);
+        }
+        .btn-outline:hover {
+            background-color: var(--teal);
+            color: var(--white);
+        }
+
+        /* 시작 화면 전용 스타일 */
+        #step0 { text-align: center; }
+        #step0 h1 { font-size: 40px; margin-bottom: 5px; }
+
+        /* 대시보드 및 카드 스타일 */
+        .card {
+            border: 1px solid var(--teal);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            background-color: var(--white);
+        }
+        .card h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .card.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+            border-color: #ccc;
+        }
+        .timer {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--navy);
+            margin: 15px 0;
+            text-align: center;
+        }
+        .motivation {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            color: var(--teal);
+            margin-bottom: 10px;
+        }
+
+        /* 탭 메뉴 */
+        .tabs { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-bottom: 2px solid #ccc; font-weight: bold; color: #999;}
+        .tab.active { border-bottom: 2px solid var(--navy); color: var(--navy); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 단계 0: 시작 화면 -->
+    <div id="step0" class="step">
+        <h1>수행평가 알리미</h1>
+        <p class="desc">잊지 말고 꼼꼼하게, 완벽한 수행평가 준비</p>
+        <button class="btn" style="padding: 18px; font-size: 18px; margin-top: 20px;" onclick="startApp()">시작하기</button>
+    </div>
+
+    <!-- 단계 1: 날짜/교시 입력 -->
+    <div id="step1" class="step">
+        <h2>수행평가 등록</h2>
+        <p class="desc">일정과 과목을 입력해주세요.</p>
+        <div id="step1-container"></div>
+        <button class="btn btn-outline" onclick="addSubjectInput()">+ 과목 추가</button>
+        <button class="btn" onclick="goToStep2()">다음</button>
+    </div>
+
+    <!-- 단계 2: 준비물 입력 -->
+    <div id="step2" class="step">
+        <h2>준비물 확인</h2>
+        <p class="desc">필요한 준비물이 있다면 적어주세요.</p>
+        <div id="step2-container"></div>
+        <button class="btn" onclick="goToStep3()">다음</button>
+    </div>
+
+    <!-- 단계 3: 자신감 입력 -->
+    <div id="step3" class="step">
+        <h2>자신감 체크</h2>
+        <p class="desc">1점(부족)부터 10점(완벽)까지 입력해주세요.</p>
+        <div id="step3-container"></div>
+        <button class="btn" onclick="finishSetup()">저장 및 완료</button>
+    </div>
+
+    <!-- 대시보드 (목록 화면) -->
+    <div id="dashboard" class="step">
+        <h2>내 수행평가</h2>
+        <p class="desc">실시간 남은 시간 확인하기</p>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('pending')">진행 중</div>
+            <div class="tab" onclick="switchTab('completed')">완료됨</div>
+        </div>
+        <div id="list-container"></div>
+        <button class="btn btn-outline" style="margin-top:20px;" onclick="goToStep1()">+ 새 수행평가 등록</button>
+    </div>
+</div>
+
+<script>
+    let tempData = []; 
+    let assessments = JSON.parse(localStorage.getItem('assessments')) || [];
+
+    if (Notification.permission !== "granted") Notification.requestPermission();
+
+    window.onload = () => {
+        showStep('step0'); // 무조건 시작 화면 먼저 표시
+        setInterval(updateTimers, 1000); 
+        checkNotifications(); 
+    };
+
+    function showStep(stepId) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById(stepId).classList.add('active');
+    }
+
+    function startApp() {
+        if(assessments.length > 0) showDashboard();
+        else goToStep1();
+    }
+
+    /* --- 1단계 로직 --- */
+    function goToStep1() {
+        tempData = [];
+        document.getElementById('step1-container').innerHTML = '';
+        addSubjectInput();
+        showStep('step1');
+    }
+
+    function addSubjectInput() {
+        const id = Date.now();
+        const html = `
+            <div class="input-group" id="group-${id}">
+                <label>과목명</label>
+                <input type="text" class="sub-name" placeholder="국어, 수학 등">
+                <label>날짜 및 시간</label>
+                <input type="datetime-local" class="sub-date">
+                <label>교시</label>
+                <input type="number" class="sub-period" placeholder="숫자만 입력 (예: 3)">
+            </div>
+            <hr style="border:0; border-top:1px dashed #ccc; margin-bottom:25px;">
+        `;
+        document.getElementById('step1-container').insertAdjacentHTML('beforeend', html);
+    }
+
+    /* --- 2단계 로직 --- */
+    function goToStep2() {
+        const groups = document.querySelectorAll('#step1-container .input-group');
+        tempData = [];
+        let valid = true;
+
+        groups.forEach(group => {
+            const name = group.querySelector('.sub-name').value;
+            const date = group.querySelector('.sub-date').value;
+            const period = group.querySelector('.sub-period').value;
+            
+            if(!name || !date) valid = false;
+            
+            tempData.push({ id: Date.now() + Math.random(), name, date, period, materials: '', confidence: 5, completed: false, notified3: false, notified1: false });
+        });
+
+        if(!valid) return alert("과목명과 날짜를 입력해주세요.");
+
+        let html = '';
+        tempData.forEach((item, index) => {
+            html += `
+                <div class="input-group">
+                    <label>[${item.name}] 준비물</label>
+                    <input type="text" id="mat-${index}" placeholder="예: 교과서, 프린트물">
+                </div>
+            `;
+        });
+        document.getElementById('step2-container').innerHTML = html;
+        showStep('step2');
+    }
+
+    /* --- 3단계 로직 --- */
+    function goToStep3() {
+        tempData.forEach((item, index) => {
+            item.materials = document.getElementById(`mat-${index}`).value || '없음';
+        });
+
+        let html = '';
+        tempData.forEach((item, index) => {
+            html += `
+                <div class="input-group">
+                    <label>[${item.name}] 자신감</label>
+                    <input type="number" id="conf-${index}" min="1" max="10" value="5">
+                </div>
+            `;
+        });
+        document.getElementById('step3-container').innerHTML = html;
+        showStep('step3');
+    }
+
+    /* --- 완료 및 저장 --- */
+    function finishSetup() {
+        tempData.forEach((item, index) => {
+            item.confidence = parseInt(document.getElementById(`conf-${index}`).value);
+        });
+
+        assessments = [...assessments, ...tempData];
+        saveData();
+        showDashboard();
+    }
+
+    /* --- 대시보드 로직 --- */
+    let currentTab = 'pending';
+    function showDashboard() {
+        showStep('dashboard');
+        renderList();
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        renderList();
+    }
+
+    function renderList() {
+        const container = document.getElementById('list-container');
+        container.innerHTML = '';
+
+        const filtered = assessments.filter(a => currentTab === 'pending' ? !a.completed : a.completed);
+
+        if(filtered.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; margin-top:30px;">등록된 수행평가가 없습니다.</p>`;
+            return;
+        }
+
+        filtered.forEach(item => {
+            // 자극 문구 (네이비 & 청록색 테마에 맞게 심플하게)
+            let motText = '차근차근 준비하면 충분해요.';
+            if(item.confidence <= 3) motText = '발등에 불 떨어졌어요! 당장 시작하세요!';
+            else if (item.confidence >= 8) motText = '여유롭네요. 한 번 쓱 훑어보고 만점 받으세요!';
+
+            container.innerHTML += `
+                <div class="card ${item.completed ? 'completed' : ''}">
+                    <h3>${item.name} ${item.period ? `<span style="font-size:14px; color:var(--teal);">(${item.period}교시)</span>` : ''}</h3>
+                    <p style="margin: 5px 0;"><strong>준비물:</strong> ${item.materials}</p>
+                    <div class="motivation">${motText}</div>
+                    ${!item.completed ? `<div class="timer" id="timer-${item.id}">계산 중...</div>` : ''}
+                    ${!item.completed ? `<button class="btn" onclick="completeTask('${item.id}')">완료하기</button>` : `<button class="btn btn-outline" onclick="deleteTask('${item.id}')">삭제하기</button>`}
+                </div>
+            `;
+        });
+        updateTimers();
+    }
+
+    /* --- 유틸리티 및 타이머/알림 --- */
+    function completeTask(id) {
+        const index = assessments.findIndex(a => a.id == id);
+        if(index > -1) {
+            assessments[index].completed = true;
+            saveData();
+            renderList();
+        }
+    }
+
+    function deleteTask(id) {
+        assessments = assessments.filter(a => a.id != id);
+        saveData();
+        renderList();
+    }
+
+    function saveData() {
+        localStorage.setItem('assessments', JSON.stringify(assessments));
+    }
+
+    function updateTimers() {
+        if(document.getElementById('dashboard').classList.contains('active') && currentTab === 'pending') {
+            assessments.forEach(item => {
+                if(!item.completed) {
+                    const timerEl = document.getElementById(`timer-${item.id}`);
+                    if(timerEl) {
+                        const now = new Date().getTime();
+                        const target = new Date(item.date).getTime();
+                        const distance = target - now;
+
+                        if (distance < 0) {
+                            timerEl.innerHTML = "수행평가 종료됨";
+                        } else {
+                            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                            timerEl.innerHTML = `D-${days} ${hours}시간 ${minutes}분 ${seconds}초`;
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function checkNotifications() {
+        setInterval(() => {
+            const now = new Date().getTime();
+            assessments.forEach(item => {
+                if(!item.completed) {
+                    const target = new Date(item.date).getTime();
+                    const distance = target - now;
+                    const daysLeft = distance / (1000 * 60 * 60 * 24);
+
+                    if (daysLeft <= 3 && daysLeft > 2 && !item.notified3) {
+                        sendPushNotification("수행평가 D-3", `${item.name} 수행평가가 3일 남았습니다. 시작하세요!`);
+                        item.notified3 = true;
+                        saveData();
+                    }
+                    if (daysLeft <= 1 && daysLeft > 0 && !item.notified1) {
+                        sendPushNotification("수행평가 D-1", `${item.name} 수행평가가 내일입니다. 준비물(${item.materials}) 확인하세요.`);
+                        item.notified1 = true;
+                        saveData();
+                    }
+                }
+            });
+        }, 60000); 
+    }
+
+    function sendPushNotification(title, body) {
+        if (Notification.permission === "granted") {
+            new Notification(title, { body: body });
+        }
+    }
+</script>
+</body>
+</html>
