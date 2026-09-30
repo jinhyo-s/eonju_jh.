@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수행평가 알리미</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    
+    <style>
+        :root {
+            --navy-900: #0F172A;
+            --navy-800: #1E293B;
+            --navy-700: #334155;
+            --teal-600: #0D9488;
+            --teal-500: #14B8A6;
+            --teal-100: #CCFBF1;
+            --teal-50: #F0FDFA;
+            --coral-500: #F97316;
+            --coral-100: #FFEDD5;
+            --bg-page: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border-light: #E2E8F0;
+            --border-hover: #CBD5E1;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --danger: #EF4444;
+            --danger-bg: #FEF2F2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 840px;
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+            border: 1px solid var(--border-light);
+            position: relative;
+        }
+
+        @media (max-width: 640px) {
+            .app-container {
+                padding: 24px 18px;
+                border-radius: 20px;
+            }
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 {
+            color: var(--navy-900);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .step-title {
+            font-size: 1.75rem;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .step-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 28px;
+            font-weight: 400;
+        }
+
+        #step0 {
+            text-align: center;
+            padding: 40px 12px 24px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--teal-100);
+            color: var(--teal-600);
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 0.02em;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 9vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.15;
+            color: var(--navy-900);
+            margin-bottom: 16px;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            font-weight: 400;
+        }
+
+        .notification-bar {
+            background-color: #F1F5F9;
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .notif-status-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .notif-status-dot.granted { background-color: #10B981; }
+        .notif-status-dot.denied { background-color: var(--danger); }
+        .notif-status-dot.default { background-color: #F59E0B; }
+
+        .btn-3d {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 13px 24px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            user-select: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--navy-900);
+            color: #FFFFFF;
+            box-shadow: 0 4px 0 var(--navy-700), 0 8px 16px rgba(15, 23, 42, 0.15);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--navy-800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--navy-700), 0 12px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--navy-700), 0 4px 8px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-teal {
+            background-color: var(--teal-600);
+            color: #FFFFFF;
+            box-shadow: 0 4px 0 #09695F, 0 8px 16px rgba(13, 148, 136, 0.2);
+        }
+
+        .btn-teal:hover {
+            background-color: var(--teal-500);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #09695F, 0 12px 20px rgba(13, 148, 136, 0.25);
+        }
+
+        .btn-teal:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #09695F, 0 4px 8px rgba(13, 148, 136, 0.1);
+        }
+
+        .btn-outline {
+            background-color: #FFFFFF;
+            color: var(--navy-800);
+            border: 2px solid var(--border-light);
+            box-shadow: 0 4px 0 var(--border-light);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--border-hover);
+            background-color: #F8FAFC;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--border-hover);
+        }
+
+        .btn-outline:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--border-hover);
+        }
+
+        .btn-sm {
+            padding: 7px 14px;
+            font-size: 0.88rem;
+            border-radius: 10px;
+        }
+
+        .btn-danger {
+            background-color: #FFFFFF;
+            color: var(--danger);
+            border: 2px solid #FCA5A5;
+            box-shadow: 0 4px 0 #FCA5A5;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #F87171;
+        }
+
+        .btn-danger:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #F87171;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 56vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .form-card {
+            background-color: #F8FAFC;
+            border: 1.5px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-card:focus-within {
+            border-color: var(--teal-600);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .subject-badge {
+            background-color: var(--navy-900);
+            color: #FFFFFF;
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .btn-close-card {
+            background: #F1F5F9;
+            color: var(--text-muted);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .btn-close-card:hover {
+            background-color: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--navy-800);
+        }
+
+        input[type="text"], input[type="date"], select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border-light);
+            border-radius: 10px;
+            background-color: #FFFFFF;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.15s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--teal-600);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+        }
+
+        .confidence-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .circle-arrow-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #FFFFFF;
+            border: 1.5px solid var(--border-light);
+            padding: 6px 14px;
+            border-radius: 30px;
+        }
+
+        .circle-btn {
+            background-color: #FFFFFF;
+            color: var(--navy-900);
+            border: 2px solid var(--navy-900);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.12s ease;
+            user-select: none;
+        }
+
+        .circle-btn:hover {
+            background-color: var(--navy-900);
+            color: #FFFFFF;
+        }
+
+        .circle-btn:active {
+            transform: scale(0.92);
+        }
+
+        .conf-display-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            min-width: 28px;
+            text-align: center;
+            color: var(--navy-900);
+        }
+
+        .tab-menu {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background-color: #F1F5F9;
+            padding: 4px;
+            border-radius: 14px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn.active {
+            background-color: #FFFFFF;
+            color: var(--navy-900);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .alert-banner-box {
+            background-color: var(--coral-100);
+            border: 1.5px solid var(--coral-500);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .alert-banner-title {
+            font-weight: 800;
+            color: #C2410C;
+            font-size: 0.98rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .alert-banner-item {
+            font-size: 0.92rem;
+            color: #9A3412;
+            font-weight: 600;
+            padding-left: 14px;
+            position: relative;
+        }
+
+        .alert-banner-item::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            font-weight: 800;
+        }
+
+        .notice-banner {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 16px;
+            background-color: #F1F5F9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+            max-height: 56vh;
+            overflow-y: auto;
+            padding: 2px;
+        }
+
+        .assessment-card {
+            background-color: #FFFFFF;
+            border: 1.5px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .assessment-card:hover {
+            border-color: var(--teal-600);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .assessment-card.completed {
+            background-color: #F8FAFC;
+            border-color: #E2E8F0;
+            opacity: 0.9;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--navy-900);
+        }
+
+        .period-badge {
+            background-color: var(--teal-50);
+            color: var(--teal-600);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .info-row {
+            font-size: 0.95rem;
+            color: var(--navy-800);
+            margin-bottom: 6px;
+        }
+
+        .info-row strong {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .advice-box {
+            background-color: var(--teal-50);
+            border-left: 3.5px solid var(--teal-600);
+            padding: 8px 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--teal-600);
+            margin: 10px 0;
+        }
+
+        .timer-badge-box {
+            background-color: #F8FAFC;
+            border: 1.5px solid var(--border-light);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--navy-900);
+            margin-top: 10px;
+        }
+
+        .dday-tag {
+            display: inline-block;
+            background-color: var(--coral-500);
+            color: #FFFFFF;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            margin-right: 6px;
+        }
+
+        .dday-tag.ended {
+            background-color: var(--text-muted);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            padding: 28px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+            border: 1px solid var(--border-light);
+            animation: modalPop 0.2s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--navy-900);
+            margin-bottom: 10px;
+        }
+
+        .modal-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- Global Notification Status Bar -->
+    <div class="notification-bar">
+        <div>
+            <span class="notif-status-dot default" id="notif-dot"></span>
+            <span id="notif-status-text" style="font-weight: 600;">알림 권한: 확인 중...</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+            <button class="btn-3d btn-outline btn-sm" id="btn-request-notif" onclick="requestNotificationPermission()">권한 설정</button>
+            <button class="btn-3d btn-outline btn-sm" onclick="sendTestNotification()">테스트 알림</button>
+        </div>
+    </div>
+
+    <!-- Step 0: Hero Screen -->
+    <div id="step0" class="step">
+        <span class="hero-badge">스마트 학업 스케줄러</span>
+        <h1 class="hero-title">수행평가<br>알리미</h1>
+        <p class="hero-subtitle">3일 전 · 1일 전 맞춤 알림으로 완벽 대비!</p>
+        <button class="btn-3d btn-primary btn-full" style="max-width: 280px;" onclick="startApp()">시작하기</button>
+    </div>
+
+    <!-- Step 1: Add Assessment Basics -->
+    <div id="step1" class="step">
+        <h2 class="step-title">1단계: 수행평가 등록</h2>
+        <p class="step-desc">과목명, 평가 날짜, 교시를 입력하세요.</p>
+        <div id="step1-list" class="form-card-list"></div>
+        <div class="nav-buttons">
+            <button class="btn-3d btn-outline" style="flex: 1;" onclick="addSubjectCard()">+ 과목 추가</button>
+            <button class="btn-3d btn-teal" style="flex: 1;" onclick="goToStep2()">다음 (준비물)</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Input Materials -->
+    <div id="step2" class="step">
+        <h2 class="step-title">2단계: 준비물 작성</h2>
+        <p class="step-desc">각 수행평가에 필요한 준비물을 적어주세요.</p>
+        <div id="step2-list" class="form-card-list"></div>
+        <div class="nav-buttons">
+            <button class="btn-3d btn-outline" style="flex: 1;" onclick="showStep('step1')">이전</button>
+            <button class="btn-3d btn-teal" style="flex: 1;" onclick="goToStep3()">다음 (자신감)</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Confidence Control -->
+    <div id="step3" class="step">
+        <h2 class="step-title">3단계: 자신감 체크</h2>
+        <p class="step-desc">화살표 버튼으로 과목별 자신감을 설정하세요 (1~10점).</p>
+        <div id="step3-list" class="form-card-list"></div>
+        <div class="nav-buttons">
+            <button class="btn-3d btn-outline" style="flex: 1;" onclick="showStep('step2')">이전</button>
+            <button class="btn-3d btn-primary" style="flex: 1;" onclick="finishSetup()">저장 및 완료</button>
+        </div>
+    </div>
+
+    <!-- Step Dashboard: Assessment List -->
+    <div id="dashboard" class="step">
+        <h2 class="step-title" style="margin-bottom: 16px;">내 수행평가 목록</h2>
+
+        <!-- In-App Notification Highlight Banner -->
+        <div id="inapp-alert-banner" class="alert-banner-box" style="display: none;">
+            <div class="alert-banner-title">🚨 임박한 수행평가 알림</div>
+            <div id="inapp-alert-list"></div>
+        </div>
+        
+        <div class="tab-menu">
+            <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">진행 중</button>
+            <button class="tab-btn" id="tab-completed" onclick="switchTab('completed')">완료됨</button>
+        </div>
+
+        <div id="completed-notice" class="notice-banner" style="display: none;">
+            * 완료된 수행평가는 7일 후 자동으로 삭제됩니다.
+        </div>
+
+        <div id="cards-container" class="cards-grid"></div>
+
+        <button class="btn-3d btn-outline btn-full" onclick="goToStep1()">+ 새 수행평가 등록하기</button>
+    </div>
+
+</div>
+
+<!-- Custom Modal Overlay -->
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div id="modal-title" class="modal-title">알림</div>
+        <div id="modal-desc" class="modal-desc">내용</div>
+        <div id="modal-actions" class="modal-btn-row"></div>
+    </div>
+</div>
+
+<script>
+    let tempData = [];
+    let assessments = JSON.parse(localStorage.getItem('assessments')) || [];
+
+    const periodTimes = {
+        "1": "08:50",
+        "2": "09:45",
+        "3": "10:40",
+        "4": "11:35",
+        "5": "13:20",
+        "6": "14:15",
+        "7": "15:10"
+    };
+
+    window.onload = () => {
+        cleanUpOldCompletedTasks();
+        updateNotificationStatusUI();
+        showStep('step0');
+        
+        // Start timers & notification checks
+        setInterval(updateTimers, 1000);
+        setInterval(checkUpcomingNotifications, 10000); // Check notifications every 10 seconds
+        
+        // Run initial notification check on load
+        setTimeout(checkUpcomingNotifications, 800);
+    };
+
+    function updateNotificationStatusUI() {
+        const dot = document.getElementById('notif-dot');
+        const text = document.getElementById('notif-status-text');
+        
+        if (!("Notification" in window)) {
+            dot.className = 'notif-status-dot denied';
+            text.innerText = '알림 권한: 지원되지 않는 브라우저';
+            return;
+        }
+
+        if (Notification.permission === "granted") {
+            dot.className = 'notif-status-dot granted';
+            text.innerText = '알림 권한: 허용됨 (D-3, D-1 자동 알림)';
+        } else if (Notification.permission === "denied") {
+            dot.className = 'notif-status-dot denied';
+            text.innerText = '알림 권한: 거부됨 (브라우저 설정에서 변경 가능)';
+        } else {
+            dot.className = 'notif-status-dot default';
+            text.innerText = '알림 권한: 미설정 (클릭하여 허용)';
+        }
+    }
+
+    function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+            showAlert("지원 불가", "이 브라우저는 웹 알림 기능을 지원하지 않습니다.");
+            return;
+        }
+
+        Notification.requestPermission().then(permission => {
+            updateNotificationStatusUI();
+            if (permission === "granted") {
+                showAlert("알림 설정 완료", "수행평가 3일 전과 1일 전에 푸시 알림을 받으실 수 있습니다!");
+                sendPushNotification("수행평가 알리미", "알림이 성공적으로 설정되었습니다.");
+            } else if (permission === "denied") {
+                showAlert("알림 거부됨", "브라우저 주소창 왼쪽의 자물쇠/설정 아이콘에서 알림 권한을 직접 허용할 수 있습니다.");
+            }
+        });
+    }
+
+    function sendTestNotification() {
+        if (!("Notification" in window)) {
+            showAlert("테스트 실패", "이 브라우저는 웹 알림을 지원하지 않습니다.");
+            return;
+        }
+
+        if (Notification.permission === "granted") {
+            sendPushNotification("수행평가 알리미 테스트", "테스트 알림이 정상적으로 작동하고 있습니다!");
+            showAlert("테스트 성공", "브라우저 데스크톱/상단 알림 창을 확인하세요.");
+        } else {
+            requestNotificationPermission();
+        }
+    }
+
+    function sendPushNotification(title, body) {
+        if (window.Notification && Notification.permission === "granted") {
+            try {
+                new Notification(title, {
+                    body: body,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/2642/2642258.png',
+                    tag: 'assessment-reminder-' + Date.now()
+                });
+            } catch (e) {
+                console.error("Notification error:", e);
+            }
+        }
+    }
+
+    function checkUpcomingNotifications() {
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        let pendingAlerts = [];
+
+        assessments.forEach(item => {
+            if (!item.completed) {
+                const targetTimeStr = periodTimes[item.period] || "08:50";
+                const targetDateObj = new Date(`${item.date}T${targetTimeStr}:00`);
+                const targetMidnight = new Date(targetDateObj.getFullYear(), targetDateObj.getMonth(), targetDateObj.getDate());
+                
+                const daysDiff = Math.round((targetMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+                const distanceMs = targetDateObj.getTime() - now.getTime();
+
+                // D-3 Trigger Check (When daysDiff is exactly 3 or remaining time is <= 3 days)
+                if (daysDiff === 3 && !item.notified3 && distanceMs > 0) {
+                    item.notified3 = true;
+                    saveData();
+                    
+                    const msg = `${item.name} 수행평가가 3일 남았습니다! (${item.date} ${item.period}교시)`;
+                    sendPushNotification("🚨 수행평가 D-3 알림", msg);
+                    pendingAlerts.push(`🚨 [${item.name}] 수행평가가 3일 남았습니다! (준비물: ${item.materials})`);
+                }
+
+                // D-1 Trigger Check (When daysDiff is 1 or 0 or remaining time is <= 1 day)
+                if ((daysDiff === 1 || daysDiff === 0) && !item.notified1 && distanceMs > 0) {
+                    item.notified1 = true;
+                    saveData();
+                    
+                    const msg = `${item.name} 수행평가가 내일/오늘입니다! 준비물(${item.materials})을 챙기세요.`;
+                    sendPushNotification("⚡ 수행평가 D-1 임박 알림", msg);
+                    pendingAlerts.push(`⚡ [${item.name}] 수행평가가 임박했습니다! 준비물을 확인하세요 (${item.materials})`);
+                }
+            }
+        });
+
+        // If newly triggered notifications exist, show immediate pop-up modal
+        if (pendingAlerts.length > 0) {
+            showAlert("🔔 수행평가 임박 알림!", pendingAlerts.join("\n\n"));
+            renderInAppBanner();
+        }
+    }
+
+    function cleanUpOldCompletedTasks() {
+        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        
+        assessments = assessments.filter(item => {
+            if (!item.completed) return true;
+            if (!item.completedAt) return true;
+            return (now - item.completedAt) < SEVEN_DAYS_MS;
+        });
+        
+        saveData();
+    }
+
+    function showStep(stepId) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById(stepId).classList.add('active');
+    }
+
+    function startApp() {
+        if (Notification.permission === "default") {
+            requestNotificationPermission();
+        }
+        if (assessments.length > 0) showDashboard();
+        else goToStep1();
+    }
+
+    function goToStep1() {
+        tempData = [];
+        document.getElementById('step1-list').innerHTML = '';
+        addSubjectCard();
+        showStep('step1');
+    }
+
+    function addSubjectCard() {
+        const id = Date.now() + Math.floor(Math.random() * 1000);
+        const count = document.querySelectorAll('#step1-list .form-card').length + 1;
+        
+        const html = `
+            <div class="form-card" id="card-${id}">
+                <div class="card-header-row">
+                    <span class="subject-badge">과목 ${count}</span>
+                    <button class="btn-close-card" onclick="removeSubjectCard(${id})" title="삭제">✕</button>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>과목명</label>
+                        <input type="text" class="sub-name" placeholder="예: 국어, 수학, 영어">
+                    </div>
+                    <div class="input-group">
+                        <label>평가 날짜</label>
+                        <input type="date" class="sub-date">
+                    </div>
+                    <div class="input-group">
+                        <label>교시 선택</label>
+                        <select class="sub-period">
+                            <option value="1">1교시 (08:50)</option>
+                            <option value="2">2교시 (09:45)</option>
+                            <option value="3">3교시 (10:40)</option>
+                            <option value="4">4교시 (11:35)</option>
+                            <option value="5">5교시 (13:20)</option>
+                            <option value="6">6교시 (14:15)</option>
+                            <option value="7">7교시 (15:10)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('step1-list').insertAdjacentHTML('beforeend', html);
+        updateCardBadges();
+    }
+
+    function removeSubjectCard(id) {
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.remove();
+        
+        const list = document.getElementById('step1-list');
+        if (list.children.length === 0) {
+            addSubjectCard();
+        } else {
+            updateCardBadges();
+        }
+    }
+
+    function updateCardBadges() {
+        const badges = document.querySelectorAll('#step1-list .subject-badge');
+        badges.forEach((b, idx) => {
+            b.innerText = `과목 ${idx + 1}`;
+        });
+    }
+
+    function goToStep2() {
+        const cards = document.querySelectorAll('#step1-list .form-card');
+        tempData = [];
+        let isValid = true;
+
+        cards.forEach(card => {
+            const name = card.querySelector('.sub-name').value.trim();
+            const date = card.querySelector('.sub-date').value;
+            const period = card.querySelector('.sub-period').value;
+
+            if (!name || !date) isValid = false;
+
+            tempData.push({
+                id: Date.now() + Math.random(),
+                name, date, period, materials: '', confidence: 5,
+                completed: false, completedAt: null,
+                notified3: false, notified1: false
+            });
+        });
+
+        if (!isValid) {
+            showAlert("입력 확인", "과목명과 날짜를 빠짐없이 입력해 주세요.");
+            return;
+        }
+
+        let html = '';
+        tempData.forEach((item, index) => {
+            html += `
+                <div class="form-card">
+                    <div class="card-header-row">
+                        <span class="subject-badge">${item.name}</span>
+                        <span style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">${item.date} (${item.period}교시)</span>
+                    </div>
+                    <div class="input-group">
+                        <label>준비물 / 준비 내용</label>
+                        <input type="text" id="mat-${index}" placeholder="예: 교과서, 필기구, 프린트">
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('step2-list').innerHTML = html;
+        showStep('step2');
+    }
+
+    function goToStep3() {
+        tempData.forEach((item, index) => {
+            const val = document.getElementById(`mat-${index}`).value.trim();
+            item.materials = val !== '' ? val : '없음';
+        });
+
+        let html = '';
+        tempData.forEach((item, index) => {
+            html += `
+                <div class="form-card">
+                    <div class="confidence-row">
+                        <div>
+                            <span class="subject-badge">${item.name}</span>
+                            <span style="margin-left: 8px; color: var(--text-muted); font-size: 0.95rem;">준비물: ${item.materials}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 0.95rem; font-weight: 700; color: var(--navy-800);">자신감:</span>
+                            <div class="circle-arrow-group">
+                                <button class="circle-btn" type="button" onclick="adjustConfidence(${index}, 1)" title="증가">▲</button>
+                                <span class="conf-display-val" id="conf-val-${index}">5</span>
+                                <button class="circle-btn" type="button" onclick="adjustConfidence(${index}, -1)" title="감소">▼</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('step3-list').innerHTML = html;
+        showStep('step3');
+    }
+
+    function adjustConfidence(index, delta) {
+        const display = document.getElementById(`conf-val-${index}`);
+        let current = parseInt(display.innerText, 10);
+        
+        if (delta === 1) { // Up Arrow -> Increase (Loop 10 -> 1)
+            current = current >= 10 ? 1 : current + 1;
+        } else if (delta === -1) { // Down Arrow -> Decrease (Loop 1 -> 10)
+            current = current <= 1 ? 10 : current - 1;
+        }
+        
+        display.innerText = current;
+    }
+
+    function finishSetup() {
+        tempData.forEach((item, index) => {
+            item.confidence = parseInt(document.getElementById(`conf-val-${index}`).innerText, 10);
+        });
+
+        assessments = [...assessments, ...tempData];
+        saveData();
+        checkUpcomingNotifications();
+        showDashboard();
+    }
+
+    let currentTab = 'pending';
+
+    function showDashboard() {
+        showStep('dashboard');
+        renderInAppBanner();
+        renderList();
+    }
+
+    function renderInAppBanner() {
+        const banner = document.getElementById('inapp-alert-banner');
+        const list = document.getElementById('inapp-alert-list');
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        let urgentItems = [];
+
+        assessments.forEach(item => {
+            if (!item.completed) {
+                const targetTimeStr = periodTimes[item.period] || "08:50";
+                const targetDateObj = new Date(`${item.date}T${targetTimeStr}:00`);
+                const targetMidnight = new Date(targetDateObj.getFullYear(), targetDateObj.getMonth(), targetDateObj.getDate());
+                const dayDiff = Math.round((targetMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+
+                if (dayDiff >= 0 && dayDiff <= 3) {
+                    let dayStr = dayDiff === 0 ? 'D-Day' : `D-${dayDiff}`;
+                    urgentItems.push(`${item.name} (${item.date} ${item.period}교시) - <strong style="color: #C2410C;">${dayStr}</strong> [준비물: ${item.materials}]`);
+                }
+            }
+        });
+
+        if (urgentItems.length > 0) {
+            list.innerHTML = urgentItems.map(txt => `<div class="alert-banner-item">${txt}</div>`).join('');
+            banner.style.display = 'flex';
+        } else {
+            banner.style.display = 'none';
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
+        document.getElementById('tab-completed').classList.toggle('active', tab === 'completed');
+        document.getElementById('completed-notice').style.display = tab === 'completed' ? 'block' : 'none';
+        renderList();
+    }
+
+    function renderList() {
+        cleanUpOldCompletedTasks();
+        const container = document.getElementById('cards-container');
+        container.innerHTML = '';
+
+        let filtered = assessments.filter(a => currentTab === 'pending' ? !a.completed : a.completed);
+
+        // Sort by closest deadline (date + period time) ascending
+        filtered.sort((a, b) => {
+            const timeA = new Date(`${a.date}T${periodTimes[a.period] || '08:50'}:00`).getTime();
+            const timeB = new Date(`${b.date}T${periodTimes[b.period] || '08:50'}:00`).getTime();
+            return timeA - timeB;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 48px 0; font-size:1.05rem;">등록된 수행평가가 없습니다.</div>`;
+            return;
+        }
+
+        filtered.forEach(item => {
+            let adviceText = '차근차근 복습하며 준비하세요.';
+            if (item.confidence <= 3) adviceText = '빠른 준비와 집중이 필요합니다.';
+            else if (item.confidence >= 8) adviceText = '현재 상태를 가볍게 점검하세요.';
+
+            container.innerHTML += `
+                <div class="assessment-card ${item.completed ? 'completed' : ''}">
+                    <div>
+                        <div class="card-top">
+                            <h3 class="card-title">${item.name}</h3>
+                            <span class="period-badge">${item.period}교시 (${periodTimes[item.period] || ''})</span>
+                        </div>
+                        <div class="info-row"><strong>날짜:</strong> ${item.date}</div>
+                        <div class="info-row"><strong>준비물:</strong> ${item.materials}</div>
+                        <div class="advice-box">${adviceText}</div>
+                        ${!item.completed ? `<div class="timer-badge-box" id="timer-${item.id}">시간 계산 중...</div>` : ''}
+                    </div>
+                    <div style="margin-top: 16px;">
+                        ${!item.completed ? 
+                            `<button class="btn-3d btn-teal btn-full" style="padding: 10px;" onclick="completeTask('${item.id}')">완료하기</button>` : 
+                            `<div style="display: flex; gap: 8px;">
+                                <button class="btn-3d btn-outline" style="flex:1; padding: 10px; font-size: 0.95rem;" onclick="restoreTask('${item.id}')">복구하기</button>
+                                <button class="btn-3d btn-danger" style="flex:1; padding: 10px; font-size: 0.95rem;" onclick="confirmDelete('${item.id}')">삭제하기</button>
+                            </div>`
+                        }
+                    </div>
+                </div>
+            `;
+        });
+        updateTimers();
+    }
+
+    function completeTask(id) {
+        const item = assessments.find(a => String(a.id) === String(id));
+        if (item) {
+            item.completed = true;
+            item.completedAt = Date.now();
+            saveData();
+            renderInAppBanner();
+            renderList();
+        }
+    }
+
+    function restoreTask(id) {
+        const item = assessments.find(a => String(a.id) === String(id));
+        if (item) {
+            item.completed = false;
+            item.completedAt = null;
+            saveData();
+            renderInAppBanner();
+            renderList();
+        }
+    }
+
+    function confirmDelete(id) {
+        showConfirm("수행평가 삭제", "이 수행평가를 정말 삭제하시겠습니까?", () => {
+            deleteTask(id);
+        });
+    }
+
+    function deleteTask(id) {
+        assessments = assessments.filter(a => String(a.id) !== String(id));
+        saveData();
+        renderInAppBanner();
+        renderList();
+    }
+
+    function saveData() {
+        localStorage.setItem('assessments', JSON.stringify(assessments));
+    }
+
+    function updateTimers() {
+        if (document.getElementById('dashboard').classList.contains('active') && currentTab === 'pending') {
+            const now = new Date();
+            const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            assessments.forEach(item => {
+                if (!item.completed) {
+                    const timerEl = document.getElementById(`timer-${item.id}`);
+                    if (timerEl) {
+                        const targetTimeStr = periodTimes[item.period] || "08:50";
+                        const targetDateObj = new Date(`${item.date}T${targetTimeStr}:00`);
+                        const targetMidnight = new Date(targetDateObj.getFullYear(), targetDateObj.getMonth(), targetDateObj.getDate());
+                        
+                        const dayDiff = Math.round((targetMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+                        let dDayText = "";
+                        if (dayDiff > 0) dDayText = `D-${dayDiff}`;
+                        else if (dayDiff === 0) dDayText = `D-Day`;
+                        else dDayText = `D+${Math.abs(dayDiff)}`;
+
+                        const distance = targetDateObj.getTime() - now.getTime();
+
+                        if (distance < 0) {
+                            timerEl.innerHTML = `<span class="dday-tag ended">종료</span> 평가 시간이 지났습니다.`;
+                        } else {
+                            const totalHours = Math.floor(distance / (1000 * 60 * 60));
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                            
+                            timerEl.innerHTML = `<span class="dday-tag">${dDayText}</span> ${totalHours}시간 ${minutes}분 ${seconds}초 남음`;
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function showAlert(title, desc) {
+        const modal = document.getElementById('custom-modal');
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-desc').innerHTML = desc.replace(/\n/g, '<br>');
+        document.getElementById('modal-actions').innerHTML = `
+            <button class="btn-3d btn-primary" style="padding: 8px 20px; font-size: 1rem;" onclick="closeModal()">확인</button>
+        `;
+        modal.classList.add('active');
+    }
+
+    function showConfirm(title, desc, onConfirm) {
+        const modal = document.getElementById('custom-modal');
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-desc').innerText = desc;
+        document.getElementById('modal-actions').innerHTML = `
+            <button class="btn-3d btn-outline" style="padding: 8px 18px; font-size: 1rem;" onclick="closeModal()">취소</button>
+            <button class="btn-3d btn-danger" style="padding: 8px 18px; font-size: 1rem;" id="modal-confirm-btn">삭제</button>
+        `;
+        document.getElementById('modal-confirm-btn').onclick = () => {
+            closeModal();
+            onConfirm();
+        };
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('custom-modal').classList.remove('active');
+    }
+</script>
+</body>
+</html>
